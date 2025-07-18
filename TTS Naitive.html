@@ -1,13 +1,101 @@
-<button onclick="speak()">🔊 Test</button>
-<script>
-function speak() {
-  speechSynthesis.cancel();
-  const voices = speechSynthesis.getVoices();
-  const msg = new SpeechSynthesisUtterance("Hello world");
-  if (voices.length) {
-    msg.voiceURI = voices[0].voiceURI;
-    msg.lang = voices[0].lang;
-  }
-  speechSynthesis.speak(msg);
-}
-</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ứng dụng học phát âm với SpeechSynthesis API</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    textarea { width: 100%; height: 80px; margin-bottom: 10px; }
+    select, input[type=range] { width: 100%; margin: 6px 0; }
+    button { padding: 8px 16px; margin: 4px; }
+    label { font-weight: bold; display: block; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h2>🗣️ Ứng dụng học phát âm bằng TTS (Native)</h2>
+
+  <label for="exampleSelect">📚 Chọn mẫu câu:</label>
+  <select id="exampleSelect" onchange="setExampleText()">
+    <option value="">-- Chọn mẫu --</option>
+    <option>Hello! How are you?</option>
+    <option>This is a text-to-speech demo.</option>
+    <option>Xin chào! Tôi đang học phát âm.</option>
+    <option>I love learning English pronunciation.</option>
+  </select>
+
+  <label for="text">✏️ Nhập văn bản:</label>
+  <textarea id="text">Hello! How are you?</textarea>
+
+  <label for="voiceSelect">🗣️ Chọn giọng:</label>
+  <select id="voiceSelect"></select>
+
+  <label for="rate">⏩ Tốc độ nói: <span id="rateVal">1.0</span></label>
+  <input type="range" id="rate" min="0.5" max="2.0" value="1.0" step="0.1" oninput="updateSlider('rate')" />
+
+  <label for="pitch">🎵 Cao độ: <span id="pitchVal">1.0</span></label>
+  <input type="range" id="pitch" min="0.5" max="2.0" value="1.0" step="0.1" oninput="updateSlider('pitch')" />
+
+  <div style="margin-top:10px;">
+    <button onclick="speak()">▶️ Nghe phát âm</button>
+    <button onclick="cancel()">⏹️ Dừng lại</button>
+  </div>
+
+  <p id="status"></p>
+
+  <script>
+    const synth = window.speechSynthesis;
+    const voiceSelect = document.getElementById("voiceSelect");
+    const rateInput = document.getElementById("rate");
+    const pitchInput = document.getElementById("pitch");
+
+    function populateVoices() {
+      const voices = synth.getVoices();
+      voiceSelect.innerHTML = "";
+      voices.forEach((voice, i) => {
+        const option = document.createElement("option");
+        option.value = i;
+        option.textContent = `${voice.name} (${voice.lang})`;
+        voiceSelect.appendChild(option);
+      });
+    }
+
+    populateVoices();
+    if (typeof speechSynthesis !== "undefined" && speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = populateVoices;
+    }
+
+    function updateSlider(id) {
+      const val = document.getElementById(id).value;
+      document.getElementById(id + "Val").textContent = val;
+    }
+
+    function setExampleText() {
+      const example = document.getElementById("exampleSelect").value;
+      if (example) document.getElementById("text").value = example;
+    }
+
+    function speak() {
+      synth.cancel();  // Hủy trước đó, quan trọng trên di động
+      const text = document.getElementById("text").value;
+      if (!text.trim()) return;
+
+      const utter = new SpeechSynthesisUtterance(text);
+      const voices = synth.getVoices();
+      utter.voice = voices[voiceSelect.value] || null;
+      utter.rate = parseFloat(rateInput.value);
+      utter.pitch = parseFloat(pitchInput.value);
+
+      utter.onstart = () => document.getElementById("status").textContent = "🔊 Đang đọc...";
+      utter.onend = () => document.getElementById("status").textContent = "✅ Hoàn tất.";
+      utter.onerror = () => document.getElementById("status").textContent = "❌ Lỗi phát âm.";
+
+      synth.speak(utter);
+    }
+
+    function cancel() {
+      synth.cancel();
+      document.getElementById("status").textContent = "⏹️ Đã dừng.";
+    }
+  </script>
+</body>
+</html>
