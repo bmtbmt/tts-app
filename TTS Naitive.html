@@ -1,13 +1,13 @@
-<!DOCTYPE html>
-<html>
-<body>
-  <button onclick="speak()">▶️ Phát</button>
-
-  <script>
-    function speak() {
-      const msg = new SpeechSynthesisUtterance("Hello! This is a test.");
-      window.speechSynthesis.speak(msg);
-    }
-  </script>
-</body>
-</html>
+<button onclick="speak()">🔊 Test</button>
+<script>
+function speak() {
+  speechSynthesis.cancel();
+  const voices = speechSynthesis.getVoices();
+  const msg = new SpeechSynthesisUtterance("Hello world");
+  if (voices.length) {
+    msg.voiceURI = voices[0].voiceURI;
+    msg.lang = voices[0].lang;
+  }
+  speechSynthesis.speak(msg);
+}
+</script>
