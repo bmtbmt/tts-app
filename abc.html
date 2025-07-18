@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>meSpeak.js English Voices Demo</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 2em auto; }
+    label, select, input, textarea, button { display: block; width: 100%; margin-bottom: 1em; }
+    textarea { height: 100px; }
+  </style>
+</head>
+<body>
+
+  <h2>Client-side TTS with meSpeak.js</h2>
+
+  <label for="voice">Chọn giọng tiếng Anh:</label>
+  <select id="voice">
+    <option value="en-us">English (US)</option>
+    <option value="en-rp">English (UK RP)</option>
+    <option value="en-sc">English (Scottish)</option>
+  </select>
+
+  <label for="speed">Tốc độ (words per minute): <span id="speedVal">175</span></label>
+  <input type="range" id="speed" min="80" max="300" value="175">
+
+  <label for="text">Text để phát:</label>
+  <textarea id="text">Hello, this is a test of meSpeak TTS.</textarea>
+
+  <button id="speak">🗣️ Speak</button>
+
+  <script src="https://cdn.jsdelivr.net/npm/mespeak/mespeak.min.js"></script>
+  <script>
+    meSpeak.loadConfig("https://cdn.jsdelivr.net/npm/mespeak/mespeak_config.json");
+
+    // Load voice files dynamically
+    const voices = {
+      "en-us": "https://cdn.jsdelivr.net/npm/mespeak/voices/en/en-us.json",
+      "en-rp": "https://cdn.jsdelivr.net/npm/mespeak/voices/en/en-rp.json",
+      "en-sc": "https://cdn.jsdelivr.net/npm/mespeak/voices/en/en-sc.json"
+    };
+
+    document.getElementById("voice").addEventListener("change", (e) => {
+      meSpeak.loadVoice(voices[e.target.value]);
+    });
+
+    // Load default voice
+    meSpeak.loadVoice(voices["en-us"]);
+
+    // Speed slider interaction
+    const speedSlider = document.getElementById("speed");
+    const speedVal = document.getElementById("speedVal");
+    speedSlider.addEventListener("input", () => {
+      speedVal.textContent = speedSlider.value;
+    });
+
+    // Speak button logic
+    document.getElementById("speak").addEventListener("click", () => {
+      const text = document.getElementById("text").value;
+      const voice = document.getElementById("voice").value;
+      const speed = parseInt(speedSlider.value, 10);
+
+      meSpeak.speak(text, {
+        voice,
+        speed,
+        variant: "f3",
+        amplitude: 100,
+        wordgap: 0
+      });
+    });
+  </script>
+</body>
+</html>
